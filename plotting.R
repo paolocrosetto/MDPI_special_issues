@@ -77,3 +77,11 @@ ggsave(
   plot = p,
   width = 9, height = 7, units = "in", dpi = 200
 )
+
+
+## finally, here I create a summary dataset with the info everyone wants
+## number of SIs per journal per year. 
+dfplot %>% 
+  select(journal, year, n) %>% 
+  spread(year, n, fill = 0) %>% 
+  write_csv('summary.csv')

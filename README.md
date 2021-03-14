@@ -8,12 +8,13 @@ It also contains an R script to generate a summary plot.
 
 The data you want is provided in two .csv files.
 
--   `jounrals.csv` contains basic data on 74 MDPI journals
+-   `journals.csv` contains basic data on 74 MDPI journals
 -   `SIs.csv` contains a line for each MDPI special issue ever made, or now open and in progress, for which a deadline exists.
+-   `summary.csv` is a summary dataset containing one row per journal and one column per year, and summarising the number of SIs per year.
 
 ## I just want the plot!
 
-You want to the `MPDI_special_issues_2013-21.png` file.
+You want the `MPDI_special_issues_2013-21.png` file.
 
 Or just look here:
 
