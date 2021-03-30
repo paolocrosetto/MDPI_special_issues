@@ -52,9 +52,15 @@ ISSN <- pg %>%
   html_nodes(".journal-name-cell+ td") %>% 
   html_text()
 
+# how many volumes already published? 
+volumes <- pg %>% 
+  html_nodes("td.show-for-large-up:nth-child(4)") %>% 
+  html_text() %>% 
+  str_extract("[0-9]+?(?=\\()")
+
 
 # compiling all the data into a data frame
-journals <- tibble(title, url, yearfunded, articles, IF, ISSN)
+journals <- tibble(title, url, yearfunded, articles, IF, volumes, ISSN)
 
 # data cleaning: title
 journals <- journals %>% 

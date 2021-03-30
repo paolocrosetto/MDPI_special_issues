@@ -26,3 +26,10 @@ SI <- html_text(html_nodes(pg, ".belongsTo"))
 SI <- if_else(is_empty(partSI), 0, 1)
 
 h <- tibble(journal, year, volume, DOI, SI, history)
+
+
+
+# journal articles are stored on MDPI website at an url of the form
+# root/ISSN/volume/issue/article
+# where ISSN is 
+
