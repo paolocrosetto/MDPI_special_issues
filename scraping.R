@@ -47,8 +47,14 @@ IF <- pg %>%
   html_text() %>% 
   as.numeric()
 
+# journal ISSN code
+ISSN <- pg %>% 
+  html_nodes(".journal-name-cell+ td") %>% 
+  html_text()
+
+
 # compiling all the data into a data frame
-journals <- tibble(title, url, yearfunded, articles, IF)
+journals <- tibble(title, url, yearfunded, articles, IF, ISSN)
 
 # data cleaning: title
 journals <- journals %>% 
