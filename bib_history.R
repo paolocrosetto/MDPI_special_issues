@@ -31,5 +31,16 @@ h <- tibble(journal, year, volume, DOI, SI, history)
 
 # journal articles are stored on MDPI website at an url of the form
 # root/ISSN/volume/issue/article
-# where ISSN is 
+#
+# for each volume there is one html page with the issues;
+# for each issue there is one (very long) html page with all the articles.
+#
+# the preliminary step is to know how many volumes per journal. This is already present in the journals.csv database.
+# the first step is to know how many issues per volume, and add this to the journal database
+# the second step is for each issue, find out how many articles there are, and add this too
+# for each article, we use the code above to scrape the page for relevant info
+
+# step 1: issues for each volume
+#
+# this is tricky because MDPI changed the way their volume pages work; they follow one of two formats. 
 
