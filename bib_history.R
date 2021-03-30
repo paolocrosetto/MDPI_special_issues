@@ -43,4 +43,33 @@ h <- tibble(journal, year, volume, DOI, SI, history)
 # step 1: issues for each volume
 #
 # this is tricky because MDPI changed the way their volume pages work; they follow one of two formats. 
+# so the code will have to take care of the possibility of two formats. 
+
+# "new" page format (pictures in a grid)
+pg <- read_html("https://www.mdpi.com/1996-1073/14")
+
+# match the last character of the last element of the vector of Issue titles
+html_text(html_nodes(pg, "h4")) %>% tail(n=1) %>% str_extract("(?<=\\Iss. ).*")
+
+
+# "old" page format with a simple list of links
+# if the page is "old" the code above for the "new" page returns an empty character
+# which is handy to make an if 
+pg <- read_html("https://www.mdpi.com/1996-1073/8")
+
+# match the issue number in the last element of the vector of Issue titles
+html_text(html_nodes(pg, "#middle-column li")) %>% 
+  tail(n=1) %>% 
+  str_extract("[0-9]+?(?=\\ ())")
+
+# step 2: articles per issue
+#
+pg <- read_html("https://www.mdpi.com/1996-1073/13/1")
+
+numarticle <- html_text(html_node(pg, "#exportArticles .medium-12")) %>% 
+  str_extract("[0-9]+?(?=\\n)")
+
+
+
+
 
