@@ -21,8 +21,8 @@ DOI <- html_text(html_nodes(pg, ".bib-identity a"))
 
 history <- html_text(html_nodes(pg, ".pubhistory"))
 
-partSI <- html_text(html_nodes(pg, ".belongsTo"))
+SI <- html_text(html_nodes(pg, ".belongsTo"))
 
-partSI <- if_else(is_empty(partSI), "regular", "special")
+SI <- if_else(is_empty(partSI), 0, 1)
 
-h <- tibble(journal, year, volume, DOI, partSI, history)
+h <- tibble(journal, year, volume, DOI, SI, history)
