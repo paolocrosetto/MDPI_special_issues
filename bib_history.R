@@ -6,29 +6,6 @@ library(rvest)
 library(purrr)
 library(stringr)
 
-# prototype on one page
-pg <- read_html("https://www.mdpi.com/1996-1073/14/1/155")
-
-pg <- read_html("https://www.mdpi.com/1996-1073/14/1/246")
-
-journal <- html_text(html_nodes(pg, ".bib-identity em:nth-child(1)"))
-  
-year <- html_text(html_nodes(pg, ".bib-identity b")) %>% as.integer()
-
-volume <-  html_text(html_nodes(pg, ".bib-identity b+ em")) %>% as.integer()
-  
-DOI <- html_text(html_nodes(pg, ".bib-identity a"))
-
-history <- html_text(html_nodes(pg, ".pubhistory"))
-
-SI <- html_text(html_nodes(pg, ".belongsTo"))
-
-SI <- if_else(is_empty(partSI), 0, 1)
-
-h <- tibble(journal, year, volume, DOI, SI, history)
-
-
-
 # journal articles are stored on MDPI website at an url of the form
 # root/ISSN/volume/issue/article
 url_base <- "https://www.mdpi.com/%s/%s/%s/%s"
@@ -104,7 +81,9 @@ iter_issues <- tibble(isvol = rep(iter_helper$isvol, iter_helper$nissues)) %>%
   separate(isvol, into = c("ISSN", "volume"), sep = "__")
 
 
-pmap_dfr(iter_issues %>% head(), function(ISSN,volume,issue,...) {
+# this takes a while, it downloads 3295 pages... and could fail at any of them!
+articles <- pmap_dfr(iter_issues, function(ISSN,volume,issue,...) {
+  cat(ISSN, volume, issue, "\n")
   pg <- read_html(sprintf("https://www.mdpi.com/%s/%s/%s",ISSN,volume,issue))
   numarticle <- html_text(html_node(pg, "#exportArticles .medium-12")) %>% 
     str_extract("[0-9]+?(?=\\n)")
@@ -116,13 +95,40 @@ pmap_dfr(iter_issues %>% head(), function(ISSN,volume,issue,...) {
   p
 } )
 
+articles <- articles %>% 
+  as_tibble() %>% 
+  mutate(across(.cols = -ISSN, .fns = as.integer)) %>% 
+  left_join(iter_volumes, by = c("ISSN", "volume")) %>% 
+  select(journal, everything()) 
+articles %>% 
+  write_csv("articles_per_issue_per_volume_per_journal.csv")
+
 
 
 
 # step 3: relevant info for each article [for a subset of journals]
 
-journals %>% filter(ISSN == "2297-8739")
+journals %>% filter(journal == "sustainability")
 
+# prototype on one page
+pg <- read_html("https://www.mdpi.com/1996-1073/14/1/155")
 
+pg <- read_html("https://www.mdpi.com/1996-1073/14/1/246")
+
+journal <- html_text(html_nodes(pg, ".bib-identity em:nth-child(1)"))
+
+year <- html_text(html_nodes(pg, ".bib-identity b")) %>% as.integer()
+
+volume <-  html_text(html_nodes(pg, ".bib-identity b+ em")) %>% as.integer()
+
+DOI <- html_text(html_nodes(pg, ".bib-identity a"))
+
+history <- html_text(html_nodes(pg, ".pubhistory"))
+
+SI <- html_text(html_nodes(pg, ".belongsTo"))
+
+SI <- if_else(is_empty(partSI), 0, 1)
+
+h <- tibble(journal, year, volume, DOI, SI, history)
 
 
