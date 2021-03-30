@@ -5,6 +5,7 @@ library(tidyverse)
 library(rvest)
 library(purrr)
 library(stringr)
+library(lubridate)
 
 # journal articles are stored on MDPI website at an url of the form
 # root/ISSN/volume/issue/article
@@ -108,27 +109,84 @@ articles %>%
 
 # step 3: relevant info for each article [for a subset of journals]
 
-journals %>% filter(journal == "sustainability")
+iter_helper <- articles %>% 
+  select(-journal) %>% 
+  unite(iter, ISSN, volume, issue, sep = "__") %>% 
+  filter(!is.na(narticles))
 
-# prototype on one page
-pg <- read_html("https://www.mdpi.com/1996-1073/14/1/155")
 
-pg <- read_html("https://www.mdpi.com/1996-1073/14/1/246")
+iter_articles <- 
+  tibble(iter = rep(iter_helper$iter, iter_helper$narticles)) %>% 
+  group_by(iter) %>%
+  mutate(article = seq_along(iter)) %>% 
+  separate(iter, into = c("ISSN", "volume", "issue"), sep = "__")
+  
 
-journal <- html_text(html_nodes(pg, ".bib-identity em:nth-child(1)"))
+# PROBLEMS: 
+# 1. articles up until 2014 use a different scheme for their URL, 
+# using the number of page instead of the number of article. [solution: delete all instances of 2014]
+iter_articles <- iter_articles %>% 
+  mutate(across(-ISSN, as.integer)) %>% 
+  group_by(ISSN) %>% 
+  mutate(minvol = min(volume)) %>% 
+  filter(volume != minvol) %>% 
+  select(-minvol)
 
-year <- html_text(html_nodes(pg, ".bib-identity b")) %>% as.integer()
+# 2. article number is increasing for each volume, irrespective of the issue [solve with some clever sums]
+iter_articles <- iter_articles %>%
+  group_by(ISSN, volume) %>% 
+  mutate(article = seq_along(issue))
 
-volume <-  html_text(html_nodes(pg, ".bib-identity b+ em")) %>% as.integer()
 
-DOI <- html_text(html_nodes(pg, ".bib-identity a"))
+trial <- iter_articles %>% 
+  head(50)
 
-history <- html_text(html_nodes(pg, ".pubhistory"))
+scrape <- function(ISSN, volume, issue, article, ...){
+  
+  cat(ISSN, volume, issue, article, "\n")
+  
+  pg <- read_html(sprintf("https://www.mdpi.com/%s/%s/%s/%s", ISSN, volume, issue, article))
+  
+  journal <- html_text(html_nodes(pg, ".bib-identity em:nth-child(1)"))
+  
+  year <- html_text(html_nodes(pg, ".bib-identity b")) %>% as.integer()
+  
+  #volume <-  html_text(html_nodes(pg, ".bib-identity b+ em")) %>% as.integer()
+  
+  DOI <- html_text(html_nodes(pg, ".bib-identity a"))
+  
+  history <- html_text(html_nodes(pg, ".pubhistory"))
+  
+  SI <- html_text(html_nodes(pg, ".belongsTo"))
+  
+  SI <- if_else(is_empty(partSI), 0, 1)
+  
+  h <- tibble(journal, year, volume, issue, DOI, SI, history)
+  h
+}
 
-SI <- html_text(html_nodes(pg, ".belongsTo"))
+# wrapping the function around a "possibly" clause to catch error and move on
+scrape2 <- possibly(scrape, otherwise = tibble(journal = NA, year = NA, volume = NA, issue = NA, DOI = NA, SI = NA, history = NA))
 
-SI <- if_else(is_empty(partSI), 0, 1)
+df <- pmap_dfr(trial, scrape2)
 
-h <- tibble(journal, year, volume, DOI, SI, history)
+
+
+# cleaing the history
+df %>% 
+  separate(history, into = c("A_1","A_2","A_3","A_4","A_5", "A_6", "A_7", "A_8"), sep = "/") %>% 
+  pivot_longer(cols = starts_with("A"), names_to = "drop", values_to = "history") %>% 
+  select(-drop) %>% 
+  separate(history, into = c("event", "date"), sep = ":") %>% 
+  filter(!is.na(event)) %>% 
+  mutate(date = dmy(date))
+  
+
+
+
+
+
+
+
 
 
