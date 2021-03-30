@@ -1,76 +1,76 @@
-title,journal,yearfunded,articles,IF,ISSN
-International Journal of Molecular Sciences,ijms,2000,36156,4.556,1422-0067
-Sensors,sensors,2001,32777,3.275,1424-8220
-Sustainability,sustainability,2009,32551,2.576,2071-1050
-Molecules,molecules,1996,28406,3.267,1420-3049
-International Journal of Environmental Research and Public Health,ijerph,2004,27642,2.849,1660-4601
-Applied Sciences,applsci,2011,22532,2.474,2076-3417
-Energies,energies,2008,22383,2.702,1996-1073
-Materials,materials,2008,18927,3.057,1996-1944
-Remote Sensing,remotesensing,2009,15242,4.509,2072-4292
-Nutrients,nutrients,2009,13929,4.546,2072-6643
-Water,water,2009,11536,2.544,2073-4441
-Polymers,polymers,2009,9500,3.426,2073-4360
-Cancers,cancers,2009,9082,6.126,2072-6694
-Journal of Clinical Medicine,jcm,2012,8791,3.303,2077-0383
-Nanomaterials,nanomaterials,2011,7282,4.324,2079-4991
-Entropy,entropy,1999,6944,2.494,1099-4300
-Viruses,viruses,2009,6030,3.816,1999-4915
-Metals,metals,2011,5872,2.117,2075-4701
-Symmetry,symmetry,2009,5823,2.645,2073-8994
-Cells,cells,2012,5723,4.366,2073-4409
-Electronics,electronics,2012,5360,2.412,2079-9292
-Animals,animals,2011,5271,2.323,2076-2615
-Forests,forests,2010,5169,2.221,1999-4907
-Mathematics,mathematics,2013,4821,1.747,2227-7390
-Genes,genes,2010,4569,3.759,2073-4425
-Catalysts,catalysts,2011,4542,3.52,2073-4344
-Marine Drugs,marinedrugs,2003,4438,4.073,1660-3397
-Toxins,toxins,2009,4172,3.531,2072-6651
-Agronomy,agronomy,2011,4163,2.603,2073-4395
-Micromachines,micromachines,2010,4019,2.523,2072-666X
-Foods,foods,2012,3891,4.092,2304-8158
-Atmosphere,atmosphere,2010,3819,2.397,2073-4433
-Microorganisms,microorganisms,2013,3808,4.152,2076-2607
-Processes,processes,2013,3767,2.753,2227-9717
-Biomolecules,biomolecules,2011,3720,4.082,2218-273X
-Crystals,crystals,2011,3472,2.404,2073-4352
-Coatings,coatings,2011,3451,2.436,2079-6412
-Minerals,minerals,2011,3432,2.38,2075-163X
-Plants,plants,2012,3432,2.762,2223-7747
-Pharmaceutics,pharmaceutics,2009,3012,4.421,1999-4923
-ISPRS International Journal of Geo-Information,ijgi,2012,2996,2.239,2220-9964
-Antioxidants,antioxidants,2012,2981,5.014,2076-3921
-Medicina,medicina,1920,2935,1.205,1648-9144
-Brain Sciences,brainsci,2011,2479,3.332,2076-3425
-Insects,insects,2010,2356,2.22,2075-4450
-Journal of Marine Science and Engineering,jmse,2013,2295,2.033,2077-1312
-Diagnostics,diagnostics,2011,2234,3.11,2075-4418
-Pathogens,pathogens,2012,2169,3.018,2076-0817
-Current Oncology,curroncol,1994,1934,2.257,1718-7729
-Antibiotics,antibiotics,2012,1873,3.893,2079-6382
-Pharmaceuticals,pharmaceuticals,2004,1841,4.286,1424-8247
-Agriculture,agriculture,2011,1748,2.072,2077-0472
-Vaccines,vaccines,2013,1625,4.086,2076-393X
-Healthcare,healthcare,2013,1587,1.916,2227-9032
-Land,land,2012,1527,2.429,2073-445X
-Metabolites,metabolites,2011,1455,4.097,2218-1989
-Biomedicines,biomedicines,2013,1348,4.717,2227-9059
-Diversity,diversity,2009,1336,1.402,1424-2818
-Membranes,membranes,2011,1315,3.094,2077-0375
-Biology,biology,2012,1224,3.796,2079-7737
-Life,life,2011,1104,2.991,2075-1729
-Children,children,2014,1103,2.078,2227-9067
-Journal of Fungi,jof,2015,1028,4.621,2309-608X
-Biosensors,biosensors,2011,866,3.24,2079-6374
-Universe,universe,2015,838,1.752,2218-1997
-Journal of Personalized Medicine,jpm,2011,784,4.433,2075-4426
-Photonics,photonics,2014,652,2.14,2304-6732
-Actuators,actuators,2012,488,1.957,2076-0825
-Toxics,toxics,2013,460,3.271,2305-6304
-Chemosensors,chemosensors,2013,441,3.108,2227-9040
-Journal of Theoretical and Applied Electronic Commerce Research,jtaer,2006,418,1.906,0718-1876
-Current Issues in Molecular Biology,cimb,1999,389,2.695,1467-3045
-Separations,separations,2014,357,1.9,2297-8739
-Magnetochemistry,magnetochemistry,2015,342,1.947,2312-7481
-Tomography,tomography,2015,223,1.308,2379-139X
+title,journal,yearfunded,articles,IF,volumes,ISSN
+International Journal of Molecular Sciences,ijms,2000,36186,4.556,22,1422-0067
+Sensors,sensors,2001,32784,3.275,21,1424-8220
+Sustainability,sustainability,2009,32561,2.576,13,2071-1050
+Molecules,molecules,1996,28421,3.267,26,1420-3049
+International Journal of Environmental Research and Public Health,ijerph,2004,27667,2.849,18,1660-4601
+Applied Sciences,applsci,2011,22546,2.474,11,2076-3417
+Energies,energies,2008,22390,2.702,14,1996-1073
+Materials,materials,2008,18941,3.057,14,1996-1944
+Remote Sensing,remotesensing,2009,15248,4.509,13,2072-4292
+Nutrients,nutrients,2009,13935,4.546,13,2072-6643
+Water,water,2009,11544,2.544,13,2073-4441
+Polymers,polymers,2009,9507,3.426,13,2073-4360
+Cancers,cancers,2009,9091,6.126,13,2072-6694
+Journal of Clinical Medicine,jcm,2012,8795,3.303,10,2077-0383
+Nanomaterials,nanomaterials,2011,7288,4.324,11,2079-4991
+Entropy,entropy,1999,6945,2.494,23,1099-4300
+Viruses,viruses,2009,6034,3.816,13,1999-4915
+Metals,metals,2011,5876,2.117,11,2075-4701
+Symmetry,symmetry,2009,5823,2.645,13,2073-8994
+Cells,cells,2012,5726,4.366,10,2073-4409
+Electronics,electronics,2012,5368,2.412,10,2079-9292
+Animals,animals,2011,5275,2.323,11,2076-2615
+Forests,forests,2010,5173,2.221,12,1999-4907
+Mathematics,mathematics,2013,4821,1.747,9,2227-7390
+Genes,genes,2010,4571,3.759,12,2073-4425
+Catalysts,catalysts,2011,4545,3.52,11,2073-4344
+Marine Drugs,marinedrugs,2003,4439,4.073,19,1660-3397
+Toxins,toxins,2009,4174,3.531,13,2072-6651
+Agronomy,agronomy,2011,4168,2.603,11,2073-4395
+Micromachines,micromachines,2010,4021,2.523,12,2072-666X
+Foods,foods,2012,3897,4.092,10,2304-8158
+Atmosphere,atmosphere,2010,3819,2.397,12,2073-4433
+Microorganisms,microorganisms,2013,3810,4.152,9,2076-2607
+Processes,processes,2013,3770,2.753,9,2227-9717
+Biomolecules,biomolecules,2011,3724,4.082,11,2218-273X
+Crystals,crystals,2011,3475,2.404,11,2073-4352
+Coatings,coatings,2011,3456,2.436,11,2079-6412
+Plants,plants,2012,3436,2.762,10,2223-7747
+Minerals,minerals,2011,3435,2.38,11,2075-163X
+Pharmaceutics,pharmaceutics,2009,3016,4.421,13,1999-4923
+ISPRS International Journal of Geo-Information,ijgi,2012,2996,2.239,10,2220-9964
+Antioxidants,antioxidants,2012,2984,5.014,10,2076-3921
+Medicina,medicina,1920,2935,1.205,57,1648-9144
+Brain Sciences,brainsci,2011,2481,3.332,11,2076-3425
+Insects,insects,2010,2358,2.22,12,2075-4450
+Journal of Marine Science and Engineering,jmse,2013,2297,2.033,9,2077-1312
+Diagnostics,diagnostics,2011,2242,3.11,11,2075-4418
+Pathogens,pathogens,2012,2169,3.018,10,2076-0817
+Current Oncology,curroncol,1994,1935,2.257,28,1718-7729
+Antibiotics,antibiotics,2012,1874,3.893,10,2079-6382
+Pharmaceuticals,pharmaceuticals,2004,1841,4.286,14,1424-8247
+Agriculture,agriculture,2011,1749,2.072,11,2077-0472
+Vaccines,vaccines,2013,1625,4.086,9,2076-393X
+Healthcare,healthcare,2013,1587,1.916,9,2227-9032
+Land,land,2012,1528,2.429,10,2073-445X
+Metabolites,metabolites,2011,1457,4.097,11,2218-1989
+Biomedicines,biomedicines,2013,1354,4.717,9,2227-9059
+Diversity,diversity,2009,1339,1.402,13,1424-2818
+Membranes,membranes,2011,1319,3.094,11,2077-0375
+Biology,biology,2012,1226,3.796,10,2079-7737
+Life,life,2011,1107,2.991,11,2075-1729
+Children,children,2014,1106,2.078,8,2227-9067
+Journal of Fungi,jof,2015,1029,4.621,7,2309-608X
+Biosensors,biosensors,2011,866,3.24,11,2079-6374
+Universe,universe,2015,838,1.752,7,2218-1997
+Journal of Personalized Medicine,jpm,2011,785,4.433,11,2075-4426
+Photonics,photonics,2014,653,2.14,8,2304-6732
+Actuators,actuators,2012,488,1.957,10,2076-0825
+Toxics,toxics,2013,460,3.271,9,2305-6304
+Chemosensors,chemosensors,2013,443,3.108,9,2227-9040
+Journal of Theoretical and Applied Electronic Commerce Research,jtaer,2006,418,1.906,16,0718-1876
+Current Issues in Molecular Biology,cimb,1999,389,2.695,42,1467-3045
+Separations,separations,2014,357,1.9,8,2297-8739
+Magnetochemistry,magnetochemistry,2015,343,1.947,7,2312-7481
+Tomography,tomography,2015,223,1.308,7,2379-139X
