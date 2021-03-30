@@ -31,11 +31,33 @@ h <- tibble(journal, year, volume, DOI, SI, history)
 
 # journal articles are stored on MDPI website at an url of the form
 # root/ISSN/volume/issue/article
+url_base <- "https://www.mdpi.com/%s/%s/%s/%s"
 #
 # for each volume there is one html page with the issues;
 # for each issue there is one (very long) html page with all the articles.
 #
 # the preliminary step is to know how many volumes per journal. This is already present in the journals.csv database.
+
+journals <- read_csv("journals.csv")
+
+# dataset for iterating on journals
+iter_volumes <- tibble(journal = rep(journals$journal, journals$volumes),
+                       ISSN = rep(journals$ISSN, journals$volumes)) %>%  
+  group_by(journal) %>%
+  mutate(volume = seq_along(journal))
+
+# we do not care that much about older years, so let's cut this to the last 7 issues of each journal
+iter_volumes <- iter_volumes %>% 
+  arrange(volume) %>% 
+  group_by(journal) %>% 
+  top_n(7) %>% 
+  arrange(journal)
+
+# journal "separations" throws an error, so I just discard it for the time being
+iter_volumes <- iter_volumes %>% 
+  filter(journal != "separations")
+  
+
 # the first step is to know how many issues per volume, and add this to the journal database
 # the second step is for each issue, find out how many articles there are, and add this too
 # for each article, we use the code above to scrape the page for relevant info
@@ -45,30 +67,61 @@ h <- tibble(journal, year, volume, DOI, SI, history)
 # this is tricky because MDPI changed the way their volume pages work; they follow one of two formats. 
 # so the code will have to take care of the possibility of two formats. 
 
-# "new" page format (pictures in a grid)
-pg <- read_html("https://www.mdpi.com/1996-1073/14")
+issues <- map2_df(iter_volumes$ISSN, iter_volumes$volume, function(i,j){
+  cat(i,j,'\n')
+  pg <- read_html(sprintf("https://www.mdpi.com/%s/%s", i, j))
+  
+  if (!is_empty(html_text(html_nodes(pg, "h4")))) {
+    # new page format -- grid of covers
+    nissues = html_text(html_nodes(pg, "h4")) %>% str_extract("(?<=\\Iss. ).*") %>% max()
+  } else {
+    # old page format -- list of URLs
+    nissues = html_text(html_nodes(pg, "#middle-column li")) %>% str_extract("[0-9]+?(?=\\ ())") %>% max()
+  }
+  p = data.frame(ISSN = i, 
+                 volume = j,
+                 nissues = nissues)
+  p
+})
 
-# match the last character of the last element of the vector of Issue titles
-html_text(html_nodes(pg, "h4")) %>% tail(n=1) %>% str_extract("(?<=\\Iss. ).*")
+# saving the number of issues to csv in order to save time for the next iterations
+issues %>% 
+  as_tibble() %>% 
+  left_join(iter_volumes, by = c("ISSN", "volume")) %>% 
+  select(journal, ISSN, volume, nissues) %>% 
+  write_csv("issues_per_volume_per_journal.csv")
 
-
-# "old" page format with a simple list of links
-# if the page is "old" the code above for the "new" page returns an empty character
-# which is handy to make an if 
-pg <- read_html("https://www.mdpi.com/1996-1073/8")
-
-# match the issue number in the last element of the vector of Issue titles
-html_text(html_nodes(pg, "#middle-column li")) %>% 
-  tail(n=1) %>% 
-  str_extract("[0-9]+?(?=\\ ())")
 
 # step 2: articles per issue
 #
-pg <- read_html("https://www.mdpi.com/1996-1073/13/1")
+iter_helper <- issues %>% 
+  as_tibble() %>% 
+  unite(isvol, ISSN, volume, sep = "__")
+  
+iter_issues <- tibble(isvol = rep(iter_helper$isvol, iter_helper$nissues)) %>%  
+  group_by(isvol) %>%
+  mutate(issue = seq_along(isvol)) %>% 
+  separate(isvol, into = c("ISSN", "volume"), sep = "__")
 
-numarticle <- html_text(html_node(pg, "#exportArticles .medium-12")) %>% 
-  str_extract("[0-9]+?(?=\\n)")
 
+pmap_dfr(iter_issues %>% head(), function(ISSN,volume,issue,...) {
+  pg <- read_html(sprintf("https://www.mdpi.com/%s/%s/%s",ISSN,volume,issue))
+  numarticle <- html_text(html_node(pg, "#exportArticles .medium-12")) %>% 
+    str_extract("[0-9]+?(?=\\n)")
+  
+  p = data.frame(ISSN = ISSN, 
+                 volume = volume,
+                 issue = issue,
+                 narticles = numarticle)
+  p
+} )
+
+
+
+
+# step 3: relevant info for each article [for a subset of journals]
+
+journals %>% filter(ISSN == "2297-8739")
 
 
 
