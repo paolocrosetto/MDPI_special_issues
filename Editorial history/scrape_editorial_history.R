@@ -7,8 +7,7 @@ library(purrr)
 library(stringr)
 library(lubridate)
 library(magrittr)
-library(hrbrthemes)
-library(patchwork)
+
 
 # journal articles are stored on MDPI website at an url of the form
 # root/ISSN/volume/issue/article
@@ -114,7 +113,7 @@ articles %>%
   write_csv("articles_per_issue_per_volume_per_journal.csv")
 
 
-# step 3: relevant info for each article [for a subset of journals]
+# step 3: relevant info for each article
 
 iter_helper <- articles %>% 
   select(-journal) %>% 
@@ -146,7 +145,6 @@ iter_articles <- iter_articles %>%
   mutate(article = seq_along(issue))
 
 # 3. merging with journals
-# example: actuators
 iter_articles <- iter_articles %>% 
   left_join(journals)
 
@@ -209,10 +207,8 @@ iter_journals <- iter_articles %>%
   arrange(n) %$% 
   journal
 
-# run the scrape, one journal at a time
+# run the scrape, one journal at a time -- this takes an AWFUL LOT of time
 for (jo in iter_journals) {
   cat(jo, '\n')
   onejournal(jo)
 }
-
-onejournal("ijms")

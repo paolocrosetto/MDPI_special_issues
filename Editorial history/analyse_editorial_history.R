@@ -1,4 +1,6 @@
-## scraping the publication history of articles at MDPI
+## analysing the data from the editorial history scrape
+
+## NOTE: this is REALLY MESSY, do not try this at home
 
 # libraries
 library(tidyverse)
@@ -11,10 +13,18 @@ library(hrbrthemes)
 library(patchwork)
 library(ggridges)
 library(gghalves)
+library(gt)
+library(kableExtra)
+library(waffle)
+library(ggtext)
+
+# getting basic journal data
+journals <- read_csv("journals.csv")
 
 # getting to the right place
 setwd("Editorial history/")
 
+## 1. create a plot with the basic overview for each journal
 # function to create a plot of special issues + of editorial lags for each journal
 analyse_journal <- function(data, jo) {
   df <- data
@@ -75,6 +85,8 @@ makeplot <- function(jo, ti) {
   analyse_journal(data, ti)
 }
 
+journals <- journals %>% rownames_to_column()
+
 for (i in journals$rowname %>% as.integer()) {
   ti <- journals$title[i]
   jo <- journals$journal[i]
@@ -83,13 +95,14 @@ for (i in journals$rowname %>% as.integer()) {
 }
 
 
-## getting all the data into one data frame for joint analysis
+## 2. overall analaysis
 
-# all the data
+# getting all the data
+setwd("data/")
 tbl <-
   list.files(pattern = "*.csv") %>% 
   map_df(~read_csv(.))
-
+setwd("..")
 # data cleaning
 
 # cleaning the event data
@@ -107,7 +120,7 @@ tbl <- tbl %>%
   ungroup() %>% 
   mutate(revised = if_else(nevents == 4, "Revised", "Direct accept"))
 
-
+# filtering to the events we care about and getting rid of 2015 and 2021 (they aren't there but for errors, but better safe than sorry)
 tbl <- tbl %>% 
   filter(year != 2015) %>% 
   filter(year != 2021) %>% 
@@ -115,11 +128,12 @@ tbl <- tbl %>%
   mutate(SI = as.factor(SI),
          SI = fct_recode(SI, "Special Issue" = "1", "Normal Issue" = "0"))
 
+# cleaning
 tbl <- tbl %>% 
   select(-volume, -issue, -nevents)
 
 
-# articles by SI, over all journals
+## PLOT: articles by SI, over all journals: bar version
 tbl %>% 
   select(year, DOI, SI) %>% distinct() %>% 
   group_by(year, SI, .drop = F) %>% 
@@ -135,11 +149,169 @@ tbl %>%
         panel.grid.major.x = element_blank())+
   labs(x = "", y = "Number of articles", 
        title = "Articles at MDPI - 74 journals with an IF",
-       caption = "data: MDPI -- code: @paolocrosetto")
+       caption = "data: MDPI -- code: @paolocrosetto")+
+  scale_y_continuous(breaks = c(0,50000,100000), labels = c("0", "50000", "100000"))
 ggsave("overall_articles_SI.png", width = 10, height = 8, units = "in", dpi = 300)
 
+## PLOT: articles by SI, over all journals: waffle version
+df <- tbl %>% 
+  select(year, DOI, SI) %>% distinct() %>% 
+  group_by(year, SI, .drop = F) %>% 
+  tally()
 
-# analysis of LAG between submission and acceptance
+scaler <- 200
+ggplot(df %>% mutate(n = n/scaler), aes(fill = SI, values = n)) +
+  geom_waffle(color = "white", size = .25, n_rows = 10, 
+              flip = T, radius = unit(0.7, units = "mm")
+  ) +
+  facet_wrap(~year, nrow = 1, strip.position = "bottom") +
+  scale_x_discrete() + 
+  scale_y_continuous(breaks = seq(10, 80, 20), 
+                     labels = function(x) format(x * 10*scaler, scientific = F),
+                     expand = c(0,0)) +
+  scale_fill_brewer(name=NULL, palette = "Set1", direction = -1) +
+  coord_equal() +
+  labs(
+    title = "<span style = 'color:#377EB8;'>Normal</span> and <span style = 'color:#E41A1C;'>Special</span> Issue articles at MDPI, 2016-20",
+    subtitle = sprintf("74 journals with an Impact Factor. One square = %s articles", scaler),
+    x = "",
+    y = "",
+    caption = "Data:MDPI -- code: @paolocrosetto"
+  ) +
+  #theme_minimal(base_family = "Roboto Condensed") +
+  theme_ipsum_rc()+
+  theme(panel.grid = element_blank(), panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), axis.ticks.y = element_line(),
+        plot.title = element_markdown(),
+        legend.position = "none") +
+  guides(fill = guide_legend(reverse = TRUE))
+ggsave("overall_articles_SI_waffle.png", height = 9, width = 15, units = "in", dpi = 300)
+
+
+## TABLE: growth and share of Special Issues for selected journals 
+
+# selected journals
+  selected_jo <- tbl %>% 
+    filter(year == 2016) %>% 
+    group_by(journal) %>% 
+    mutate(nbyjour = n()) %>% 
+    filter(nbyjour>50) %>% 
+    select(journal) %>% 
+    distinct() %$% 
+    journal    
+  
+# table: share of SIs by year + groth of articles and SIs 
+# With sparklines!
+
+# prepare the data
+data <- tbl %>% 
+    select(year, journal, DOI, SI) %>% 
+    distinct() %>% 
+    group_by(journal, year, SI, .drop = F) %>% 
+    tally() %>% 
+    pivot_wider(names_from = SI, values_from = n) %>% 
+    mutate(shareSI = `Special Issue`/(`Normal Issue` + `Special Issue`)) %>% 
+    mutate(N = sum(`Normal Issue` + `Special Issue`)) %>% 
+    select(journal, year, shareSI, N) 
+
+# resolution of problem with journal names
+data <- data %>% 
+  mutate(journal = case_when(journal == "Appl. Sci." ~ "Applied Sciences",
+                             journal == "Brain Sci." ~ "Brain Sciences",
+                             journal == "Curr. Oncol." ~ "Current Oncology",
+                             journal == "Brain Sci." ~ "Brain Sciences",
+                             journal == "Remote Sens." ~ "Remote Sensing",
+                             journal == "Mar. Drugs" ~ "Marine Drugs",
+                             journal == "J. Mar. Sci. Eng." ~ "Journal of Marine Science and Engineering",
+                             journal == "J. Fungi" ~ "Journal of Fungi",
+                             journal == "J. Clin. Med." ~ "Journal of Clinical Medicine",
+                             journal == "ISPRS Int. J. Geo-Inf." ~ "ISPRS International Journal of Geo-Information",
+                             journal == "Int. J. Mol. Sci." ~ "International Journal of Molecular Sciences",
+                             journal == "Int. J. Environ. Res. Public Health" ~ "International Journal of Environmental Research and Public Health",
+                             TRUE ~ journal))
+
+# more formatting
+add_data <- data %>% 
+  mutate(shareSI = round(100*shareSI, 2)) %>% 
+  pivot_wider(names_from = year, values_from = c(shareSI, N)) %>% 
+  select(journal, N_2016, N_2020, starts_with("share"))
+
+# number of special issues
+SI <- read_csv("../summary.csv")
+
+# merge the correct names and find the number of SIs in 2016 and 2020
+SIs <- journals %>% 
+  select(title, journal) %>% 
+  right_join(SI, by = "journal") %>% 
+  select(journal = title, `2016`, `2020`)
+
+# plot for the growth in SIs
+add_si_plot <- journals %>% 
+  select(title, journal) %>% 
+  right_join(SI, by = "journal") %>% 
+  select(-journal) %>% 
+  select(journal = title, everything()) %>% 
+  pivot_longer(-journal, names_to = "year", values_to = "SI") %>%
+  mutate(year = as.integer(year)) %>% 
+  filter(year >= 2016 & year <=2020) %>% 
+  group_by(journal) %>% 
+  summarise(d = list(SI)) %>% 
+  mutate(
+    plot = map(d, ~kableExtra::spec_plot(.x, same_lim = TRUE, width = 300, height = 70)),
+    plot = map(plot, "svg_text"),
+    plot = map(plot, gt::html)
+  ) %>% 
+  select(-d) %>% 
+  left_join(SIs) %>% 
+  select(journal, `2016`, SIplot = plot, `2020`)
+
+SItable <- data %>% 
+  group_by(journal) %>% 
+  summarise(d = list(N))  %>% 
+  mutate(
+    plot = map(d, ~kableExtra::spec_plot(.x, same_lim = TRUE, width = 300, height = 70)),
+    plot = map(plot, "svg_text"),
+    plot = map(plot, gt::html)
+  ) %>% 
+  select(-d) %>% 
+  left_join(add_data) %>% 
+  left_join(add_si_plot) %>% 
+  filter(journal %in% selected_jo) %>% 
+  select(journal, N_2016, plot, N_2020, starts_with("share"), `2016`, SIplot, `2020`) %>% 
+  gt() %>% 
+  tab_header(
+    title = md("**Journal growth and share of Special Issues at selected MDPI journals**")
+  ) %>% 
+  tab_source_note(
+    source_note = "Source: MDPI website, crawled in April 2021."
+  ) %>% 
+  tab_spanner(label = "Number of articles", 
+              columns = c(2:4)) %>% 
+  tab_spanner(label = "Share of Special issues",
+              columns = c(5:9)) %>% 
+  tab_spanner(label = "Number of Special issues",
+                columns = c(10:12)) %>%     
+  cols_label(journal = "", 
+             N_2016 = "'16",
+             plot = "growth",
+             N_2020 = "'20",
+             shareSI_2016 = "'16",
+             shareSI_2017 = "'17",
+             shareSI_2018 = "'18",
+             shareSI_2019 = "'19",
+             shareSI_2020 = "'20",
+             `2016` = "'16",
+             SIplot = "growth",
+             `2020` = "'20") %>% 
+  data_color(columns = c(5:9),
+             scales::col_numeric(domain = c(40,100), 
+                                 palette = "Reds",
+                                 reverse = F))
+SItable %>% 
+  gtsave("table_SI.png")
+
+### 3. Analysis of turnaround times (LAG between submission and acceptance)
+
 tbl_large <- tbl %>%
   group_by(journal, year, DOI, SI, revised) %>% 
   pivot_wider(names_from = event, values_from = date)
@@ -199,6 +371,12 @@ p1 <- tbl_lag %>%
   theme(legend.position = "none", 
         panel.grid.minor = element_blank(), 
         panel.grid.major.x = element_blank())+
+  geom_text(data = tbl_lag %>% 
+              filter(lag>0 & lag<150) %>% 
+              group_by(year, revised) %>% summarise(N = n()) %>% mutate(N = paste("N = ", N, sep = "")), 
+            inherit.aes = F,
+            aes(as.factor(year), 155, label = N), 
+            hjust = 0.4)+
   facet_wrap(~revised, ncol = 1)+
   labs(x = "", y = "Days", 
        title = "Submission to acceptance at MDPI - 74 journals with an IF",
@@ -206,16 +384,22 @@ p1 <- tbl_lag %>%
        caption = "data: MDPI -- code: @paolocrosetto")
 ggsave(plot = p1, "lag_distro.png", width = 12, height = 9, units = "in", dpi = 300)
 
-## take 2: ridges
-selected_jo <- tbl_lag %>% 
-  filter(year == 2016) %>% 
-  group_by(journal) %>% 
-  mutate(nbyjour = n()) %>% 
-  filter(nbyjour>50) %>% 
-  select(journal) %>% 
-  distinct() %$% 
-  journal
 
+# shares of observations excluded from the above plot
+tbl_lag %>% 
+  mutate(included = lag>0 & lag<150) %>% 
+  group_by(year, included) %>% 
+  tally() %>% 
+  spread(included, n) %>% 
+  mutate(share = 100*`FALSE`/ (`FALSE` + `TRUE`))
+
+# st.dev of lag across years and SIs
+tbl_lag %>% 
+  group_by(year, SI) %>% 
+  summarise(m = mean(lag, na.rm = T), sd = sd(lag, na.rm = T)) %>% 
+  arrange(SI, year)
+
+## take 2: distribution at selected journals in 2016 and 2020, with ggridges
 
 tbl_lag %>% 
   filter(year == 2016 | year == 2020) %>% 
@@ -225,7 +409,7 @@ tbl_lag %>%
          fct_relevel(year, "2020")) %>% 
   ggplot(aes(lag, reorder(journal, lag), fill = reorder(year, lag)))+
   geom_density_ridges(color = "white", alpha = .9)+
-  scale_fill_brewer(palette = "Set1", direction = 1, name = "")+
+  scale_fill_brewer(palette = "Set2", direction = 1, name = "")+
   facet_grid(.~year, shrink = T, scales = "free", space = "free")+
   theme_ipsum_rc()+
   theme(panel.grid.minor = element_blank(),
@@ -237,33 +421,9 @@ tbl_lag %>%
        caption = "data: MDPI -- code: @paolocrosetto")
 ggsave("lag_ridge.png", width = 12, height = 12, units = "in", dpi = 300)
 
-# take 3: heatmap
-# heatmap of lag by journal
-tbl_lag %>% 
-  filter(year == 2016 | year == 2020) %>% 
-  filter(journal %in% selected_jo) %>% 
-  group_by(journal, year) %>% 
-  mutate(lag_d = cut(as.integer(lag), 
-                     breaks = c(-0.5, 0.5, 10.5, 20.5, 30.5, 40.5, 50.5,60.5, 71.5, 81.5, 91.5, 1000),
-                     labels = c("0", "1-10", "11-20", "21-30", "31-40", "41-50", 
-                                "51-60", "61-70", "71-80", "81-90", ">90"))) %>% 
-  group_by(year, journal, lag_d) %>% 
-  tally() %>% 
-  mutate(share = 100*n/sum(n), 
-         share = round(share, 1)) %>% 
-  filter(lag_d != "NA") %>% 
-  ggplot(aes(lag_d, journal, fill = share))+
-  geom_tile(color = "white")+
-  scale_fill_gradient(low = "white", high = "tomato")+
-  theme_ipsum_rc()+
-  facet_wrap(~year, nrow = 1)+
-  theme(panel.grid.major = element_blank(), plot.title.position = "plot")+
-  labs(title = "Lag from submission to acceptance at top MDPI Journals", 
-       x = "Days", y = "",
-       caption = "data: MDPI -- code: @paolocrosetto")
-ggsave("lag_heatmap.png", width = 15, height = 12, units = "in", dpi = 300)
 
-# individual distribution by journal
+
+### Generating individual distribution plots by journal
 lag_journal <- function(jo){
   tbl_lag %>% 
     filter(lag>0 & lag<150) %>% 
@@ -300,9 +460,10 @@ for (i in jo) {
   try(lag_journal(i))
 }
 
-## overall table with data (2020 only)
+## overall table with data on the distribution of lags (2020 only)
 shares <- tbl_lag %>% 
-  filter(year == 2016) %>% 
+  filter(journal %in% selected_jo) %>% 
+  filter(year == 2020) %>% 
   group_by(journal) %>% 
   mutate(lag_d = cut(as.integer(lag), 
                      breaks = c(-0.5, 0.5, 10.5, 20.5, 30.5, 40.5, 50.5, 1000),
@@ -316,6 +477,7 @@ shares <- tbl_lag %>%
   select(journal, `0`, `1-10`, `11-20`, `21-30`, everything())
 
 stats <- tbl_lag %>% 
+  filter(journal %in% selected_jo) %>% 
   filter(year == 2020) %>% 
   group_by(journal) %>% 
   summarise(N = n(),
@@ -324,6 +486,25 @@ stats <- tbl_lag %>%
   mutate(across(-journal, ~round(as.numeric(.x), 2))) %>% 
   arrange(-N)
 
-hux20 <- stats %>% 
+lagtable <- stats %>% 
   left_join(shares) %>% 
-  huxtable()
+  select(-`NA`) %>% 
+  gt() %>% 
+  tab_header(
+    title = md("**Turnaround statistics for selected MDPI journals, 2020**")
+  ) %>% 
+  tab_source_note(
+    source_note = "Source: MDPI website, crawled in April 2021."
+  ) %>% 
+  tab_spanner(label = "Share of papers with turnaround in ... days",
+              columns = c(5:11)) %>% 
+  tab_spanner(label = "Days", 
+              columns = c(3,4)) %>% 
+  cols_label(journal = "") %>% 
+  data_color(columns = c(5:11),
+             scales::col_numeric(domain = c(0,50), 
+                             palette = RColorBrewer::brewer.pal(11, "RdYlGn")[1:5], 
+                             reverse = T))
+
+lagtable %>% 
+  gtsave("table_LAG.png")
