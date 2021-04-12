@@ -1,4 +1,4 @@
-# MDPI special issues
+# MDPI special issues and Editorial History
 
 This repository contains:
 
