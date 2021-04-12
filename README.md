@@ -18,7 +18,7 @@ This repository contains:
 
     -   analysis of the scraping data, in the form of a long .R file producing several plots and tables.
 
-The data was the basis for a blog post on MDPI practices that appeared on my blog.
+The data was the basis for a [blog post on MDPI](https://paolocrosetto.wordpress.com/2021/04/12/is-mdpi-a-predatory-publisher/) practices that appeared on my blog.
 
 ## I just want the data!
 
@@ -38,7 +38,7 @@ The data you want is provided in several .csv files.
 
 ## I just want the analysis!
 
-Have a look at the blog post. Alternatively, you find the plots and tables in the `Special Issues` and `Editorial History` subfolders.
+Have a look at the [blog post](https://paolocrosetto.wordpress.com/2021/04/12/is-mdpi-a-predatory-publisher/). Alternatively, you find the plots and tables in the `Special Issues` and `Editorial History` subfolders.
 
 ## I want to reproduce the analysis!
 
