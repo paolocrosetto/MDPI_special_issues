@@ -105,7 +105,6 @@ iter <- tibble(journal = rep(pages$journal, pages$pages)) %>%
          group_by(journal) %>%
         mutate(page = seq_along(journal))
 
-
 # third: scrape the special issue page(s) for each journal and append it to the dataset
 # beware: this needs ~15min
 SI <- map2_df(iter$journal, iter$page, function(i,j) {
@@ -115,14 +114,14 @@ SI <- map2_df(iter$journal, iter$page, function(i,j) {
   
   pg <- read_html(sprintf(url_base, i,j))
   
-  journal = i
-  dates = html_nodes(pg, "#middle-column strong") %>% html_text()
+  journal <- i
+  dates <- html_nodes(pg, "#middle-column strong") %>% html_text()
   
   totalN <- html_nodes(pg, "#middle-column .medium-6:nth-child(1)") %>% html_text()
   
   if (!rlang::is_empty(dates)) {
     p = data.frame(journal = i,
-               dates = html_nodes(pg, "#middle-column strong") %>% html_text(),
+               dates = dates,
                stringsAsFactors=FALSE)
   } else {
     p = data.frame(journal = i,
