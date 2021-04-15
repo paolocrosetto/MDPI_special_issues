@@ -139,4 +139,4 @@ SI <- SI %>%
   as_tibble()
 
 # export to csv
-SI %>% write_csv("SIs.csv")
+SI %>% write_csv("Special Issues/SIs.csv")

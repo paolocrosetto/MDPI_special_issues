@@ -18,6 +18,9 @@ library(ggrepel)
 library(ggbeeswarm)
 library(hrbrthemes)
 
+# getting to the right place
+setwd("Special Issues/")
+
 # import datasets
 journals <- read_csv("journals.csv")
 SI <- read_csv("SIs.csv")
@@ -50,7 +53,7 @@ dfplot <- dfplot %>%
   mutate(lab = paste(journal, n, sep = ": "))
 
 dfplot$lab[dfplot$year != 2021] <- NA
-dfplot$lab[dfplot$n<=120] <- NA
+dfplot$lab[dfplot$n<=240] <- NA
 
 # plotting
 p <- dfplot %>% 
@@ -63,7 +66,7 @@ p <- dfplot %>%
   scale_x_continuous(breaks = seq(2013, 2021, 1), limits = c(2012.5, 2024))+
   scale_fill_brewer(name = "", palette = "RdYlGn", direction = -1)+
   labs(title = "Number of Special Issues at MDPI",
-       subtitle = "74 journals with an Impact Factor",
+       subtitle = "75 journals with an Impact Factor",
        caption = "code @paolocrosetto -- data scraped from MDPI website",
        y = "", x = "")+
   theme(panel.grid.minor = element_blank(),
@@ -73,7 +76,7 @@ p <- dfplot %>%
 
 ##saving the plot
 ggsave(
-  "MDPI_special_issues_2013-21.png", 
+  "MDPI_special_issues_2013-21_april2021.png", 
   plot = p,
   width = 9, height = 7, units = "in", dpi = 200
 )
