@@ -17,7 +17,7 @@ library(magrittr)
 #
 # the preliminary step is to know how many volumes per journal. This is already present in the journals.csv database.
 
-journals <- read_csv("journals.csv")
+journals <- read_csv("Special Issues/journals.csv")
 
 # dataset for iterating on journals
 iter_volumes <- tibble(journal = rep(journals$journal, journals$volumes),
@@ -149,7 +149,7 @@ iter_articles <- iter_articles %>%
   left_join(journals)
 
 # 4. cleaning off 2021
-iter_articles <- iter_articles %>% 
+iter_articles <- iter_articles %>%
   filter(volume != volumes)
 
 # basic scraping function
@@ -171,7 +171,9 @@ scrape <- function(ISSN, volume, issue, article, ...){
   
   SI <- html_text(html_nodes(pg, ".belongsTo"))
   
-  SI <- if_else(is_empty(SI), 0, 1)
+  if (is_empty(SI)) {
+    SI <- "Normal Issue"
+  }
   
   h <- tibble(journal, year, volume, issue, DOI, SI, history)
   h
@@ -212,3 +214,9 @@ for (jo in iter_journals) {
   cat(jo, '\n')
   onejournal(jo)
 }
+
+
+# run the scrape via Rstudio jobs, to speed things up
+minjo <- 2
+maxjo <- 2
+rstudioapi::jobRunScript(path = "Editorial history/rstudio_jobs_scrape.R", importEnv = TRUE)
