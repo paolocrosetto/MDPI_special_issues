@@ -30,10 +30,18 @@ analyse_journal <- function(data, jo) {
   df <- data
   SI <- df %>% 
     filter(year != 2015) %>% 
-    filter(year != 2021) %>% 
+    filter(year != 2021)
+
+  
+  # dealing with sections and collections
+  SI$SI[str_detect(SI$SI, "Collection")] <- "Section & Collection"
+  SI$SI[str_detect(SI$SI, "Section")] <- "Section & Collection"
+  SI$SI[str_detect(SI$SI, "Special")] <- "Special Issue"
+  
+  cleandata <- SI
+  
+  cleandata %>% 
     select(year, DOI, SI) %>% distinct() %>% 
-    mutate(SI = as.factor(SI),
-           SI = fct_recode(SI, "Special Issue" = "1", "Normal Issue" = "0")) %>% 
     group_by(year, SI, .drop = F) %>% 
     tally() %>% 
     ggplot(aes(as.factor(year), n, fill = SI, color = SI))+
@@ -48,12 +56,7 @@ analyse_journal <- function(data, jo) {
     labs(x = "", y = "Number of articles", 
          title = "Articles")
   
-  LAG <- df %>% 
-    filter(year != 2015) %>% 
-    filter(year != 2021) %>% 
-    filter(event == "\nReceived" | event == "Accepted") %>% 
-    mutate(SI = as.factor(SI),
-           SI = fct_recode(SI, "Special Issue" = "1", "Normal Issue" = "0")) %>% 
+  LAG <- cleandata %>% 
     select(year, DOI, SI, event, date) %>% 
     group_by(year, DOI, SI) %>% 
     pivot_wider(names_from = event, values_from = date) %>% 
