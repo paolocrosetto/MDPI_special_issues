@@ -1,12 +1,16 @@
 # MDPI special issues and Editorial History
 
+## Update April 20th, 2020
+
+I reran the analysis to account for a bug spotted by Christos Petrou on twitter. I was unaware of the existence of Collections and Sections at MDPI, and had labelled every paper in Collections and Sections as a Special Issue article. The analysis now takes into account all four types of papers (Normal and Special issues, Sections and Collections). The main message does not change.
+
 This repository contains:
 
 -   in the `Special Issues` folder:
 
     -   scripts to scrape MDPI website and get the number of special issues for all of their 74 journals with an Impact Factor;
 
-    -   data of the scraping, ran on March 12th, 2021;
+    -   data of the scraping, ran on April 15th, 2021;
 
     -   analysis of the scraping data in the form of a plot and a summary table.
 
@@ -14,7 +18,7 @@ This repository contains:
 
     -   scripts to scrape the last 6 years' worth of articles published at the 74 MDPI journals with an IF;
 
-    -   data resulting from the scraping, ran in the first week of April, 2021;
+    -   data resulting from the scraping, ran in the third week of April, 2021;
 
     -   analysis of the scraping data, in the form of a long .R file producing several plots and tables.
 
@@ -68,9 +72,9 @@ Have a look at the [blog post](https://paolocrosetto.wordpress.com/2021/04/12/is
 
 3.  for the Editorial History:
 
-    1.  run `scrape_editorial_history.R`. It takes **forever** to run, up to a week or more, use parallel calls, or simply do not run it.
+    1.  run `scrape_editorial_history.R`. It takes **forever** to run, up to a week or more, use parallel calls, or simply do not run it. If you really want to run it consider using the Rstudio `jobs` api that allows to parallelize the scrape. This is what the `rstudio_jobs_scrape.R` script is for.
 
-    2.  run `analyse_editorial_history.R`. It produces severald ifferent outputs and is at this point rather messy. You know, open science is messy and this is just a side project, sorry!
+    2.  run `analyse_editorial_history.R`. It produces several different outputs and is at this point rather messy. You know, open science is messy and this is just a side project, sorry!
 
 ## I want to change the analysis / include more journals!
 
