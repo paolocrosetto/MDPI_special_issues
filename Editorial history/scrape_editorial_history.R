@@ -217,6 +217,8 @@ for (jo in iter_journals) {
 
 
 # run the scrape via Rstudio jobs, to speed things up
-minjo <- 2
-maxjo <- 2
+# done, just waiting for it to finish
+
+minjo <- 74
+maxjo <- 74
 rstudioapi::jobRunScript(path = "Editorial history/rstudio_jobs_scrape.R", importEnv = TRUE)
