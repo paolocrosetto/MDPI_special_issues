@@ -19,10 +19,10 @@ library(waffle)
 library(ggtext)
 
 # getting basic journal data
-journals <- read_csv("journals.csv")
+journals <- read_csv("Special Issues/journals.csv")
 
 # getting to the right place
-setwd("Editorial history/")
+setwd("Editorial history/new_data")
 
 ## 1. create a plot with the basic overview for each journal
 # function to create a plot of special issues + of editorial lags for each journal
@@ -32,15 +32,14 @@ analyse_journal <- function(data, jo) {
     filter(year != 2015) %>% 
     filter(year != 2021)
 
-  
   # dealing with sections and collections
-  SI$SI[str_detect(SI$SI, "Collection")] <- "Section & Collection"
-  SI$SI[str_detect(SI$SI, "Section")] <- "Section & Collection"
+  SI$SI[str_detect(SI$SI, "Collection")] <- "Collection"
+  SI$SI[str_detect(SI$SI, "Section")] <- "Section"
   SI$SI[str_detect(SI$SI, "Special")] <- "Special Issue"
   
   cleandata <- SI
   
-  cleandata %>% 
+  SI <- cleandata %>% 
     select(year, DOI, SI) %>% distinct() %>% 
     group_by(year, SI, .drop = F) %>% 
     tally() %>% 
@@ -101,17 +100,20 @@ for (i in journals$rowname %>% as.integer()) {
 ## 2. overall analaysis
 
 # getting all the data
-setwd("data/")
+#setwd("data/")
 tbl <-
   list.files(pattern = "*.csv") %>% 
   map_df(~read_csv(.))
-setwd("..")
+#setwd("..")
 # data cleaning
 
 # cleaning the event data
 tbl$event[tbl$event == "\n Received"] <- "Received"
 tbl$event[tbl$event == "\nReceived"] <- "Received"
 tbl$event[tbl$event == "\nAccepted"] <- "Accepted"
+tbl$event[tbl$event == "\nRevised"] <- "Revised"
+tbl$event[tbl$event == "\nPublished"] <- "Published"
+tbl$event[tbl$event == "\n Published"] <- "Published"
 
 # counting how many events
 tbl <- tbl %>% 
@@ -127,9 +129,13 @@ tbl <- tbl %>%
 tbl <- tbl %>% 
   filter(year != 2015) %>% 
   filter(year != 2021) %>% 
-  filter(event == "Received" | event == "Accepted") %>% 
-  mutate(SI = as.factor(SI),
-         SI = fct_recode(SI, "Special Issue" = "1", "Normal Issue" = "0"))
+  filter(event == "Received" | event == "Accepted") 
+
+# dealing with sections and collections
+tbl$SI[str_detect(tbl$SI, "Collection")] <- "Collection"
+tbl$SI[str_detect(tbl$SI, "Section")] <- "Section"
+tbl$SI[str_detect(tbl$SI, "Special")] <- "Special Issue"
+
 
 # cleaning
 tbl <- tbl %>% 
@@ -175,7 +181,7 @@ ggplot(df %>% mutate(n = n/scaler), aes(fill = SI, values = n)) +
   scale_fill_brewer(name=NULL, palette = "Set1", direction = -1) +
   coord_equal() +
   labs(
-    title = "<span style = 'color:#377EB8;'>Normal</span> and <span style = 'color:#E41A1C;'>Special</span> Issue articles at MDPI, 2016-20",
+    title = "Articles in <span style = 'color:#4DAF4A;'>Normal</span>, <span style = 'color:#E41A1C;'>Special</span> Issues, <span style = 'color:#377EB8;'>Sections</span> and <span style = 'color:#984EA3;'>Collections</span> at MDPI",
     subtitle = sprintf("74 journals with an Impact Factor. One square = %s articles", scaler),
     x = "",
     y = "",
@@ -212,9 +218,9 @@ data <- tbl %>%
     distinct() %>% 
     group_by(journal, year, SI, .drop = F) %>% 
     tally() %>% 
-    pivot_wider(names_from = SI, values_from = n) %>% 
-    mutate(shareSI = `Special Issue`/(`Normal Issue` + `Special Issue`)) %>% 
-    mutate(N = sum(`Normal Issue` + `Special Issue`)) %>% 
+    pivot_wider(names_from = SI, values_from = n, values_fill = 0) %>% 
+    mutate(shareSI = `Special Issue`/(`Normal Issue` + `Special Issue` + Section + Collection)) %>% 
+    mutate(N = sum(`Normal Issue` + `Special Issue` + Section + Collection)) %>% 
     select(journal, year, shareSI, N) 
 
 # resolution of problem with journal names
@@ -240,7 +246,7 @@ add_data <- data %>%
   select(journal, N_2016, N_2020, starts_with("share"))
 
 # number of special issues
-SI <- read_csv("../summary.csv")
+SI <- read_csv("../../Special Issues/summary.csv")
 
 # merge the correct names and find the number of SIs in 2016 and 2020
 SIs <- journals %>% 
@@ -367,25 +373,27 @@ ggsave("overall_lag.png", width = 12, height = 8, units = "in", dpi = 300)
 # take 1: violins
 p1 <- tbl_lag %>% 
   filter(lag>0 & lag<150) %>% 
-  ggplot(aes(as.factor(year), lag))+
-  geom_half_violin(side = "r", position = position_nudge(.15), alpha = .3, fill = "#377eb8")+
-  geom_jitter(aes(color = revised), width = 0.08, height = .5, alpha = .1, size = .2)+
+  ggplot(aes(as.factor(year), lag, fill = SI))+
+  geom_half_violin(side = "r", position = position_nudge(.15), alpha = .3)+
+  geom_jitter(aes(color = SI), width = 0.08, height = .5, alpha = .1, size = .2)+
   theme_ipsum_ps()+
   theme(legend.position = "none", 
         panel.grid.minor = element_blank(), 
         panel.grid.major.x = element_blank())+
+  scale_color_brewer(palette = "Set1", direction = -1)+
+  scale_fill_brewer(palette = "Set1", direction = -1)+
   geom_text(data = tbl_lag %>% 
               filter(lag>0 & lag<150) %>% 
-              group_by(year, revised) %>% summarise(N = n()) %>% mutate(N = paste("N = ", N, sep = "")), 
+              group_by(year, SI) %>% summarise(N = n()) %>% mutate(N = paste("N = ", N, sep = "")), 
             inherit.aes = F,
             aes(as.factor(year), 155, label = N), 
             hjust = 0.4)+
-  facet_wrap(~revised, ncol = 1)+
+  facet_wrap(~SI, ncol = 1)+
   labs(x = "", y = "Days", 
        title = "Submission to acceptance at MDPI - 74 journals with an IF",
        subtitle = "Lag distribution",
        caption = "data: MDPI -- code: @paolocrosetto")
-ggsave(plot = p1, "lag_distro.png", width = 12, height = 9, units = "in", dpi = 300)
+ggsave(plot = p1, "lag_distro.png", width = 12, height = 18, units = "in", dpi = 300)
 
 
 # shares of observations excluded from the above plot
@@ -511,3 +519,12 @@ lagtable <- stats %>%
 
 lagtable %>% 
   gtsave("table_LAG.png")
+
+tbl %>% 
+  select(DOI, year, SI) %>% 
+  distinct() %>% 
+  group_by(year, SI) %>% 
+  tally() %>% 
+  spread(year, n) %>% 
+  select(SI, n = `2020`) %>% 
+  mutate(N = sum(n), share = n/N)
