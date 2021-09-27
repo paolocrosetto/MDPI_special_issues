@@ -3,7 +3,7 @@
 ####
 
 #### Paolo Crosetto
-#### March 2021
+#### September 2021
 
 
 #### This script generates two datasets
@@ -25,7 +25,7 @@ pg <- read_html("https://www.mdpi.com/about/journals")
 title <- html_text(html_nodes(pg, ".lean div"))
 
 # get year founded
-yearfunded <- html_nodes(pg, "td.show-for-medium-up:nth-child(3)") %>% 
+yearfunded <- html_nodes(pg, "td.show-for-medium-up:nth-child(4)") %>% 
   html_text() %>% 
   as.numeric()
 
@@ -43,7 +43,7 @@ url <- pg %>%
 
 # impact factor
 IF <- pg %>% 
-  html_nodes("td.show-for-large-up:nth-child(5)") %>% 
+  html_nodes("td.show-for-large-up:nth-child(6)") %>% 
   html_text() %>% 
   as.numeric()
 
@@ -54,7 +54,7 @@ ISSN <- pg %>%
 
 # how many volumes already published? 
 volumes <- pg %>% 
-  html_nodes("td.show-for-large-up:nth-child(4)") %>% 
+  html_nodes("td.show-for-large-up:nth-child(5)") %>% 
   html_text() %>% 
   str_extract("[0-9]+?(?=\\()")
 
@@ -74,13 +74,13 @@ journals <- journals %>%
 
 
 # filtering only journals with an IF
-# !!!: this is crucial to cut the runtime of the whoe script. 
+# !!!: this is crucial to cut the runtime of the whole script. 
 journals <- journals %>% 
   filter(!is.na(IF)) %>% 
   arrange(-articles)
 
 # export journal dataset to csv
-journals %>% write_csv("journals.csv")
+journals %>% write_csv("journals_sept21.csv")
 
 #### 2. scraping to get the number of special issues per journal
 
@@ -139,4 +139,4 @@ SI <- SI %>%
   as_tibble()
 
 # export to csv
-SI %>% write_csv("Special Issues/SIs.csv")
+SI %>% write_csv("Special Issues/SIs_sept_21.csv")
