@@ -22,7 +22,7 @@ library(ggtext)
 journals <- read_csv("Special Issues/journals.csv")
 
 # getting to the right place
-setwd("Editorial history/new_data")
+setwd("Editorial history")
 
 ## 1. create a plot with the basic overview for each journal
 # function to create a plot of special issues + of editorial lags for each journal
@@ -100,11 +100,11 @@ for (i in journals$rowname %>% as.integer()) {
 ## 2. overall analaysis
 
 # getting all the data
-#setwd("data/")
+setwd("data/")
 tbl <-
   list.files(pattern = "*.csv") %>% 
   map_df(~read_csv(.))
-#setwd("..")
+setwd("..")
 # data cleaning
 
 # cleaning the event data
@@ -520,11 +520,22 @@ lagtable <- stats %>%
 lagtable %>% 
   gtsave("table_LAG.png")
 
-tbl %>% 
-  select(DOI, year, SI) %>% 
+tabshares <- tbl %>% 
+  select(journal, DOI, year, SI) %>% 
   distinct() %>% 
-  group_by(year, SI) %>% 
+  group_by(journal, year, SI) %>% 
   tally() %>% 
-  spread(year, n) %>% 
-  select(SI, n = `2020`) %>% 
-  mutate(N = sum(n), share = n/N)
+  mutate(N = sum(n), share = round(100*n/N,2)) %>% 
+  select(journal, year, SI, share) %>% 
+  spread(year, share, fill = 0)
+
+
+tabsh <- tabshares %>% 
+  gt() %>% 
+  data_color(columns = c(3:7),
+             scales::col_numeric(domain = c(0,100), 
+                                 palette = "Reds", 
+                                 reverse = F))
+
+tabsh %>% 
+  gtsave("Shares_by_type.png")
