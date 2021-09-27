@@ -73,7 +73,7 @@ p <- dfplot %>%
   ggplot(aes(label, n, group = journal))+
   geom_line(color = "grey70", alpha = 0.4)+
   geom_text_repel(aes(label = lab), nudge_x = 12, direction = "y", hjust = 1, segment.alpha = 0.6)+
-  geom_quasirandom(aes(fill = nd), size = 5, pch = 21, color = "grey60", alpha = 0.7)+
+  geom_quasirandom(aes(fill = nd), size = 4, pch = 21, color = "grey60", alpha = 0.7)+
   theme_ipsum()+
   scale_x_discrete(limits = c(yearlabels, "", ""))+
   scale_fill_brewer(name = "", palette = "RdYlGn", direction = -1)+
