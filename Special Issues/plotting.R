@@ -22,8 +22,8 @@ library(hrbrthemes)
 setwd("Special Issues/")
 
 # import datasets
-journals <- read_csv("../journals_sept21.csv")
-SI <- read_csv("SIs_sept_21.csv")
+journals <- read_csv("../journals_dect21.csv")
+SI <- read_csv("SIs_dec_21.csv")
 
 
 # data cleaning: dates
@@ -81,7 +81,7 @@ p <- dfplot %>%
                      labels = c("1 per week", "1 per day", "2 per day", 
                                 "3 per day", "4 per day", "5 per day", 
                                 "6 per day", "7 per day"))+
-  labs(title = "Number of Special Issues at MDPI -- september 2021",
+  labs(title = "Number of Special Issues at MDPI -- December 2021",
        subtitle = "85 journals with an Impact Factor",
        caption = "code @paolocrosetto -- data scraped from MDPI website",
        y = "", x = "")+
@@ -92,9 +92,9 @@ p <- dfplot %>%
 
 ##saving the plot
 ggsave(
-  "MDPI_special_issues_2016-21_september2021.png", 
+  "MDPI_special_issues_2016-21_december2021.png", 
   plot = p,
-  width = 9, height = 14, units = "in", dpi = 200
+  width = 9/1.4, height = 14/1.4, units = "in", dpi = 200
 )
 
 
