@@ -80,7 +80,7 @@ journals <- journals %>%
   arrange(-articles)
 
 # export journal dataset to csv
-journals %>% write_csv("journals_sept21.csv")
+journals %>% write_csv("journals_dect21.csv")
 
 #### 2. scraping to get the number of special issues per journal
 
@@ -139,4 +139,4 @@ SI <- SI %>%
   as_tibble()
 
 # export to csv
-SI %>% write_csv("Special Issues/SIs_sept_21.csv")
+SI %>% write_csv("Special Issues/SIs_dec_21.csv")
