@@ -3,7 +3,7 @@
 ####
 
 #### Paolo Crosetto
-#### September 2021
+#### September 2021 (last update: Sept 22)
 
 
 #### This script generates two datasets
@@ -43,7 +43,7 @@ url <- pg %>%
 
 # impact factor
 IF <- pg %>% 
-  html_nodes("td.show-for-large-up:nth-child(6)") %>% 
+  html_nodes("td.show-for-large-up:nth-child(5)") %>% 
   html_text() %>% 
   as.numeric()
 
@@ -52,15 +52,15 @@ ISSN <- pg %>%
   html_nodes(".journal-name-cell+ td") %>% 
   html_text()
 
-# how many volumes already published? 
-volumes <- pg %>% 
-  html_nodes("td.show-for-large-up:nth-child(5)") %>% 
-  html_text() %>% 
-  str_extract("[0-9]+?(?=\\()")
+# how many volumes already published? [this info is no more present on the website as of 9.2022]
+# volumes <- pg %>% 
+#   html_nodes("td.show-for-large-up:nth-child(5)") %>% 
+#   html_text() %>% 
+#   str_extract("[0-9]+?(?=\\()")
 
 
 # compiling all the data into a data frame
-journals <- tibble(title, url, yearfunded, articles, IF, volumes, ISSN)
+journals <- tibble(title, url, yearfunded, articles, IF, ISSN)
 
 # data cleaning: title
 journals <- journals %>% 
@@ -80,7 +80,7 @@ journals <- journals %>%
   arrange(-articles)
 
 # export journal dataset to csv
-journals %>% write_csv("journals_may22.csv")
+journals %>% write_csv("journals_sept22.csv")
 
 #### 2. scraping to get the number of special issues per journal
 
@@ -139,4 +139,4 @@ SI <- SI %>%
   as_tibble()
 
 # export to csv
-SI %>% write_csv("Special Issues/SIs_may_22.csv")
+SI %>% write_csv("Special Issues/SIs_sept_22.csv")

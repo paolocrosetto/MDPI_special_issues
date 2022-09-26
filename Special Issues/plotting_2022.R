@@ -3,7 +3,7 @@
 ####
 
 #### Paolo Crosetto
-#### March 2021
+#### March 2021  (last update: sept 22)
 
 
 #### This script imports two datasets
@@ -22,14 +22,18 @@ library(hrbrthemes)
 setwd("Special Issues/")
 
 # import datasets
-journals <- read_csv("../journals_dect21.csv")
-SI <- read_csv("SIs_may_22.csv")
+journals <- read_csv("../journals_sept22.csv")
+SI <- read_csv("SIs_sept_22.csv")
 
 
 # data cleaning: dates
 SI <- SI %>% 
   mutate(d = dates) %>% 
   separate(d, into = c("day", "month", "year"))
+
+# data cleaning: some problems here and there, NAs need to be removed
+SI <- SI %>% 
+  filter(!is.na(year))
 
 # count SIs per year
 SIcount <- SI %>% 
@@ -85,18 +89,20 @@ p <- dfplot %>%
                      labels = c("1 per week", "1 per day", "2 per day", 
                                 "3 per day", "4 per day", "5 per day", 
                                 "6 per day", "7 per day", "8 per day", "9 per day"))+
-  labs(title = "Number of Special Issues at MDPI -- May 2022",
-       subtitle = "85 journals with an Impact Factor",
+  labs(title = "Number of Special Issues at MDPI -- September 2022",
+       subtitle = "98 journals with an Impact Factor",
        caption = "code @paolocrosetto -- data scraped from MDPI website",
        y = "", x = "")+
   theme(panel.grid.minor = element_blank(),
         panel.grid.major.x = element_blank(),
-        legend.position = "bottom")
+        legend.position = "bottom",
+        plot.title.position = "plot",
+        panel.background = element_rect(color = "white", fill = "white"))
 
 
-##saving the plot
+## %>% saving the plot
 ggsave(
-  "MDPI_special_issues_2017-22_may22.png", 
+  "MDPI_special_issues_2017-22_sept22.png", 
   plot = p,
   width = 9/1.4, height = 14/1.4, units = "in", dpi = 200
 )
@@ -107,4 +113,4 @@ ggsave(
 dfplot %>% 
   select(journal, year, n) %>% 
   spread(year, n, fill = 0) %>% 
-  write_csv('summary_sept2021.csv')
+  write_csv('summary_sept2022.csv')
