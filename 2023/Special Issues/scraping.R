@@ -3,7 +3,7 @@
 ####
 
 #### Paolo Crosetto
-#### September 2021 (last update: Sept 22)
+#### February 2023
 
 
 #### This script generates two datasets
@@ -80,12 +80,13 @@ journals <- journals %>%
   arrange(-articles)
 
 # export journal dataset to csv
-journals %>% write_csv("journals_sept22.csv")
+journals %>% write_csv("2023/Special Issues/Data/journals.csv")
 
 #### 2. scraping to get the number of special issues per journal
 
 # this is the general format of SI URLs on MDPI website
-url_base <- "https://www.mdpi.com/journal/%s/special_issues?page_count=100&search=&section_id=0&sort=deadline&view=all&page_no=%s"
+url_base <- "https://www.mdpi.com/journal/%s/special_issues?page_count=100&search=&section_id=&sort=deadline&view=all&page_no=%s"
+
 
 # first: find the maximum amount of pages for each journal 
 # beware: this needs ~3 minutes
@@ -99,14 +100,13 @@ pages <- map_df(journals$journal, function(i){
   p
 })
 
-
 # second: use this to know how much to iterate for each journal
 iter <- tibble(journal = rep(pages$journal, pages$pages)) %>%  
          group_by(journal) %>%
         mutate(page = seq_along(journal))
 
 # third: scrape the special issue page(s) for each journal and append it to the dataset
-# beware: this needs ~15min
+# beware: this needs ~20min
 SI <- map2_df(iter$journal, iter$page, function(i,j) {
   
   # simple but effective progress indicator
@@ -115,9 +115,8 @@ SI <- map2_df(iter$journal, iter$page, function(i,j) {
   pg <- read_html(sprintf(url_base, i,j))
   
   journal <- i
-  dates <- html_nodes(pg, "#middle-column strong") %>% html_text()
+  dates <- html_nodes(pg, ".authors+ strong") %>% html_text()
   
-  totalN <- html_nodes(pg, "#middle-column .medium-6:nth-child(1)") %>% html_text()
   
   if (!rlang::is_empty(dates)) {
     p = data.frame(journal = i,
@@ -133,10 +132,14 @@ SI <- map2_df(iter$journal, iter$page, function(i,j) {
   
 })
 
+# morph into tibble
+SI <- as_tibble(SI)
+
 # cleaning the Special Issue dataset of empty pages (there should be none, but it happens that a scraped page has 0 items in it)
 SI <- SI %>% 
   filter(!is.na(dates)) %>% 
   as_tibble()
 
 # export to csv
-SI %>% write_csv("Special Issues/SIs_sept_22.csv")
+SI %>% write_csv("2023/Special Issues/Data/SIs.csv")
+
