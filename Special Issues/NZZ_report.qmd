@@ -1,0 +1,51 @@
+---
+title: "Special Issues at MDPI, September 2022"
+author: "Paolo Crosetto"
+date: 2022-10-24
+format: html
+editor: visual
+embed-resources: true
+self-contained: true
+---
+
+I scraped the website on September 26th, 2022. The following data detail all the special issues published or *open* at the time of the scrape on the MDPI website for all the MDPI journals that have an impact factor.
+
+## Special issues overall
+
+```{r, echo=F, message=F, warning=F}
+library(tidyverse)
+library(gt)
+library(gtExtras)
+
+df <- read_csv("summary_NZZ.csv")
+jou <- read_csv("journals.csv")
+
+
+df <- jou %>% 
+  select(title, journal) %>% 
+  right_join(df, by = "journal")
+
+df %>%
+  separate(label, into = c("year", "rest")) %>% 
+  select(year, N) %>% 
+  distinct() %>% 
+  pivot_wider(names_from = year, values_from = N) %>% 
+  gt() %>% 
+  gt_theme_538()
+
+
+```
+
+## Special issues by journal and by year
+
+```{r, warning=FALSE, echo=FALSE}
+
+df %>%
+  separate(label, into = c("year", "rest")) %>% 
+  select(title, year, n) %>% 
+  pivot_wider(names_from = year, values_from = n) %>% 
+  filter(!is.na(title)) %>% 
+  gt() %>% 
+  gt_theme_538()
+
+```
