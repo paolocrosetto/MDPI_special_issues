@@ -3,14 +3,10 @@
 ####
 
 #### Paolo Crosetto
-#### March 2021  (last update: sept 22)
+#### February 2023
 
 
-#### This script imports two datasets
-#### and generates a plot of SIs per year.
-####
-#### journals.csv       contains IF, number of articles, year founded, title and url key for each journal
-#### SIs.csv            contains the special issues of each journal, by year and date
+#### pltting the results
 
 #libraries
 library(tidyverse)
@@ -19,11 +15,11 @@ library(ggbeeswarm)
 library(hrbrthemes)
 
 # getting to the right place
-setwd("Special Issues/")
+setwd("2023/Special Issues/")
 
 # import datasets
-journals <- read_csv("../journals_sept22.csv")
-SI <- read_csv("SIs_sept_22.csv")
+journals <- read_csv("Data/journals.csv")
+SI <- read_csv("Data/SIs.csv")
 
 
 # data cleaning: dates
@@ -44,7 +40,7 @@ SIcount <- SI %>%
 SIcount <- SIcount %>% 
   mutate(year = as.numeric(year)) %>% 
   filter(!is.na(year)) %>% 
-  filter(year <= 2022) %>% 
+  filter(year <= 2023) %>% 
   filter(year >= 2017)
 
 # merging journal and SI data
@@ -57,7 +53,7 @@ dfplot <- dfplot %>%
   filter(year >=2013) %>% 
   mutate(lab = paste(journal, n, sep = ": "))
 
-dfplot$lab[dfplot$year != 2022] <- NA
+dfplot$lab[dfplot$year != 2023] <- NA
 dfplot$lab[dfplot$n<=365] <- NA
 
 # computing number of SIs per year
@@ -65,14 +61,6 @@ dfplot <- dfplot %>%
   group_by(year) %>% 
   mutate(N = sum(n))
 
-# creating a label indicating the N of SIs per year
-
-dfplot <- read_csv("summary_sept2022.csv")
-
-dfplot <- dfplot %>% 
-  pivot_longer(-journal, names_to = "year", values_to = "n") %>% 
-  group_by(year) %>% 
-  mutate(N = sum(n))
 
 dfplot <- dfplot %>% 
   mutate(label = paste0(year, "\n(", N, ")"))
@@ -81,7 +69,7 @@ yearlabels <- dfplot %>% select(label) %>% distinct() %>% pull(label)
 
 ## labels only for 2022
 dfplot <- dfplot %>% 
-  mutate(lab = if_else(year == 2022, paste0(journal, " ", n), NA_character_))
+  mutate(lab = if_else(year == 2023, paste0(journal, " ", n), NA_character_))
 
 
 # label
@@ -89,14 +77,14 @@ dfplot <- dfplot %>%
   mutate(nd = cut(n, breaks = c(0,12,52,365,365*5,10000), labels = c("<1/month",">1/month",">1/week", ">1/day", ">5/day")))
 
 # plotting
-p <- dfplot %>% 
+dfplot %>% 
   mutate(nd = cut(n, breaks = c(0,12,52,365,365*5,10000), labels = c("<1/month",">1/month",">1/week", ">1/day", ">5/day"))) %>% 
   ggplot(aes(label, n, group = journal))+
   geom_line(color = "grey70", alpha = 0.4)+
   geom_text_repel(aes(label = lab), nudge_x = 15, direction = "y", hjust = 1, segment.alpha = 0.3)+
   geom_quasirandom(aes(fill = nd), size = 4, pch = 21, color = "grey60", alpha = 0.7)+
   theme_ipsum()+
-  scale_x_discrete(limits = c(yearlabels, "", ""))+
+  #scale_x_discrete(limits = c(yearlabels, "", ""))+
   scale_fill_brewer(name = "", palette = "RdYlGn", direction = -1)+
   scale_y_continuous(breaks = c(52, 365, 365*2, 365*3, 365*4, 365*5, 365*6, 365*7, 365*8, 365*9), 
                      labels = c("1 per week", "1 per day", "2 per day", 
