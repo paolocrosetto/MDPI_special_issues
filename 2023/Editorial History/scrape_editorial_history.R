@@ -17,7 +17,10 @@ library(magrittr)
 #
 # the preliminary step is to know how many volumes per journal. This is already present in the journals.csv database.
 
-journals <- read_csv("Special Issues/journals.csv")
+## getting to the right place
+setwd("2023/Editorial History/")
+
+journals <- read_csv("../Special Issues/Data/journals.csv")
 
 # dataset for iterating on journals
 iter_volumes <- tibble(journal = rep(journals$journal, journals$volumes),
@@ -25,16 +28,16 @@ iter_volumes <- tibble(journal = rep(journals$journal, journals$volumes),
   group_by(journal) %>%
   mutate(volume = seq_along(journal))
 
-# we do not care that much about older years, so let's cut this to the last 6 issues of each journal
+# we do not care that much about older years, so let's cut this to the last 7 issues of each journal
 iter_volumes <- iter_volumes %>% 
   arrange(volume) %>% 
   group_by(journal) %>% 
-  top_n(6) %>% 
+  top_n(7) %>% 
   arrange(journal)
 
 # journal "separations" throws an error, so I just discard it for the time being
-iter_volumes <- iter_volumes %>% 
-  filter(journal != "separations")
+#iter_volumes <- iter_volumes %>% 
+#  filter(journal != "separations")
   
 
 # the first step is to know how many issues per volume, and add this to the journal database
@@ -74,7 +77,7 @@ issues %>%
   as_tibble() %>% 
   left_join(iter_volumes, by = c("ISSN", "volume")) %>% 
   select(journal, ISSN, volume, nissues) %>% 
-  write_csv("issues_per_volume_per_journal.csv")
+  write_csv("Data/issues_per_volume_per_journal.csv")
 
 
 # step 2: articles per issue
@@ -89,19 +92,32 @@ iter_issues <- tibble(isvol = rep(iter_helper$isvol, iter_helper$nissues)) %>%
   separate(isvol, into = c("ISSN", "volume"), sep = "__")
 
 
-# this takes a while, it downloads 3787 pages... and could fail at any of them!
-articles <- pmap_dfr(iter_issues, function(ISSN,volume,issue,...) {
-  cat(ISSN, volume, issue, "\n")
+# this takes a while, it downloads 6328 pages... and could fail at any of them!
+## TODO: add tryCatch support here
+
+iter_issues2 <- iter_issues %>% head(20)
+
+## Execute this in parallel to cut the execution time by the number of cores-1 (in my case /3)
+
+library(doParallel)
+cl <- detectCores() %>% -1 %>% makeCluster
+registerDoParallel(cl)
+
+system.time(foreach(i = 1:nrow(iter_issues2), .packages = c("rvest","stringr","tibble"), 
+        .combine = "rbind") %dopar% {
+  ISSN <- iter_issues2$ISSN[i]
+  volume <- iter_issues2$volume[i]
+  issue <- iter_issues2$issue[i]
   pg <- read_html(sprintf("https://www.mdpi.com/%s/%s/%s",ISSN,volume,issue))
+  
   numarticle <- html_text(html_node(pg, "#exportArticles .medium-12")) %>% 
     str_extract("[0-9]+?(?=\\n)")
   
-  p = data.frame(ISSN = ISSN, 
-                 volume = volume,
-                 issue = issue,
-                 narticles = numarticle)
-  p
-} )
+  p = tibble(ISSN = ISSN, 
+             volume = volume,
+             issue = issue,
+             narticles = numarticle)
+})
 
 articles <- articles %>% 
   as_tibble() %>% 
@@ -110,7 +126,7 @@ articles <- articles %>%
   select(journal, everything()) 
 
 articles %>% 
-  write_csv("articles_per_issue_per_volume_per_journal.csv")
+  write_csv("Data/articles_per_issue_per_volume_per_journal.csv")
 
 
 # step 3: relevant info for each article
