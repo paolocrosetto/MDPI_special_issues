@@ -60,7 +60,7 @@ volumes <- pg %>%
 
 
 # compiling all the data into a data frame
-journals <- tibble(title, url, yearfunded, articles, IF, ISSN, volume)
+journals <- tibble(title, url, yearfunded, articles, IF, ISSN, volumes)
 
 # data cleaning: title
 journals <- journals %>% 
