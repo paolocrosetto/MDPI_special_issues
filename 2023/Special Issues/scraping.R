@@ -72,6 +72,11 @@ journals <- journals %>%
   separate(url, into = c("drop", "drop2", "journal"), sep = "/") %>% 
   select(-starts_with("drop"))
 
+# data cleaning: ISSN
+journals <- journals %>% 
+  separate(ISSN, into = c("drop", "ISSN", "drop2"), sep = "\n") %>% 
+  select(-starts_with("drop"))
+
 
 # filtering only journals with an IF
 # !!!: this is crucial to cut the runtime of the whole script. 
