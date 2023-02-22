@@ -92,35 +92,46 @@ iter_issues <- tibble(isvol = rep(iter_helper$isvol, iter_helper$nissues)) %>%
   separate(isvol, into = c("ISSN", "volume"), sep = "__")
 
 
-# this takes a while, it downloads 6328 pages... and could fail at any of them!
-## TODO: add tryCatch support here
-
-iter_issues2 <- iter_issues %>% head(20)
+iter_issues2 <- iter_issues %>% head(5) %>% rbind(c("2000-ert", "1", "1"))
 
 ## Execute this in parallel to cut the execution time by the number of cores-1 (in my case /3)
 
+# setting up the parallelization
 library(doParallel)
-cl <- detectCores() %>% -1 %>% makeCluster
+cl <- detectCores() %>% makeCluster
 registerDoParallel(cl)
 
-system.time(foreach(i = 1:nrow(iter_issues2), .packages = c("rvest","stringr","tibble"), 
+
+# the main scraping loop -- takes about 36min on my 4-core system
+articles <- foreach(i = 1:nrow(iter_issues), 
+        .packages = c("rvest","stringr","tibble"), 
         .combine = "rbind") %dopar% {
-  ISSN <- iter_issues2$ISSN[i]
-  volume <- iter_issues2$volume[i]
-  issue <- iter_issues2$issue[i]
-  pg <- read_html(sprintf("https://www.mdpi.com/%s/%s/%s",ISSN,volume,issue))
+  # extracting the info needed
+  ISSN <- iter_issues$ISSN[i]
+  volume <- iter_issues$volume[i]
+  issue <- iter_issues$issue[i]
   
-  numarticle <- html_text(html_node(pg, "#exportArticles .medium-12")) %>% 
-    str_extract("[0-9]+?(?=\\n)")
+  # downloading the page
+  tryCatch({
+    pg <- read_html(sprintf("https://www.mdpi.com/%s/%s/%s",ISSN,volume,issue))
+    numarticle <- html_text(html_node(pg, "#exportArticles .medium-12")) %>% 
+      str_extract("[0-9]+?(?=\\n)")
+    p = tibble(ISSN = ISSN, 
+               volume = volume,
+               issue = issue,
+               narticles = numarticle)
+  }, error = function(e){
+    numarticle = NA_integer_
+    p = tibble(ISSN = ISSN, 
+               volume = volume,
+               issue = issue,
+               narticles = numarticle)
+  })
   
-  p = tibble(ISSN = ISSN, 
-             volume = volume,
-             issue = issue,
-             narticles = numarticle)
-})
+  
+}
 
 articles <- articles %>% 
-  as_tibble() %>% 
   mutate(across(.cols = -ISSN, .fns = as.integer)) %>% 
   left_join(iter_volumes, by = c("ISSN", "volume")) %>% 
   select(journal, everything()) 
