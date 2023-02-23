@@ -141,7 +141,7 @@ articles %>%
 
 ## run this just if you were stopped mid-way and had to restart
 articles <- read_csv("Data/articles_per_issue_per_volume_per_journal.csv")
-# step 3: relevant info for each article
+a# step 3: relevant info for each article
 
 iter_helper <- articles %>% 
   select(-journal) %>% 
@@ -203,16 +203,30 @@ scrape <- function(ISSN, volume, issue, article, ...){
     SI <- "Normal Issue"
   }
   
-  views <- jsonlite::read_json(sprintf("https://www.mdpi.com/%s/%s/%s/%s/stats", ISSN, volume, issue, article))$metrics$views
+  #json <- jsonlite::read_json(sprintf("https://www.mdpi.com/%s/%s/%s/%s/stats", ISSN, volume, issue, article))
   
-  downloads <- jsonlite::read_json(sprintf("https://www.mdpi.com/%s/%s/%s/%s/stats", ISSN, volume, issue, article))$metrics$downloads
+  #views <- json$metrics$views
   
-  h <- tibble(journal, year, volume, issue, DOI, views, downloads, authors, SI, history)
+  #downloads <- json$metrics$downloads
+  
+  #citations <- json$metrics$citations
+  
+  h <- tibble(journal, year, volume, issue, article, SI, history, DOI)
   h
 }
 
 # wrapping the function around a "possibly" clause to catch error and move on
-scrape2 <- possibly(scrape, otherwise = tibble(journal = NA, year = NA, volume = NA, issue = NA, DOI = NA, SI = NA, history = NA))
+scrape2 <- possibly(scrape, otherwise = tibble(journal = NA, 
+                                               year = NA, 
+                                               volume = NA, 
+                                               issue = NA, 
+                                               article = NA, 
+                                               #views = NA, 
+                                               #downloads = NA,
+                                               #citations = NA, 
+                                               SI = NA, 
+                                               history = NA, 
+                                               DOI = NA))
 
 
 # function to scrape ONE journal and save it to csv
@@ -223,10 +237,12 @@ onejournal <- function(jo){
   df <- df %>% 
     filter(!is.na(journal)) %>% 
     separate(history, into = c("A_1","A_2","A_3","A_4","A_5", "A_6", "A_7", "A_8"), sep = "/") %>% 
-    pivot_longer(cols = starts_with("A"), names_to = "drop", values_to = "history") %>% 
+    pivot_longer(cols = starts_with("A_"), 
+                 names_to = "drop", values_to = "history", 
+                 values_drop_na = T) %>% 
     select(-drop) %>% 
     separate(history, into = c("event", "date"), sep = ":") %>% 
-    filter(!is.na(event)) %>% 
+    mutate(event = str_replace(event, "\\\n", "")) %>% 
     mutate(date = dmy(date))
   
   df %>% 
@@ -242,11 +258,16 @@ iter_journals <- iter_articles %>%
   journal
 
 # run the scrape, one journal at a time -- this takes an AWFUL LOT of time
-for (jo in iter_journals) {
+for (jo in iter_journals[1]) {
   cat(jo, '\n')
-  onejournal(jo)
+  df <- onejournal(jo)
 }
 
+
+
+### TODO 23.3
+#### 1. problem with the types (character vs integer) -> transform everything to char in first function
+#### 2. 
 
 # run the scrape via Rstudio jobs, to speed things up
 # done, just waiting for it to finish
