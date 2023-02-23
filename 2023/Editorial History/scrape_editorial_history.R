@@ -101,7 +101,6 @@ library(doParallel)
 cl <- detectCores() %>% makeCluster
 registerDoParallel(cl)
 
-
 # the main scraping loop -- takes about 36min on my 4-core system
 articles <- foreach(i = 1:nrow(iter_issues), 
         .packages = c("rvest","stringr","tibble"), 
@@ -127,9 +126,8 @@ articles <- foreach(i = 1:nrow(iter_issues),
                issue = issue,
                narticles = numarticle)
   })
-  
-  
-}
+        }
+
 
 articles <- articles %>% 
   mutate(across(.cols = -ISSN, .fns = as.integer)) %>% 
@@ -140,6 +138,9 @@ articles %>%
   write_csv("Data/articles_per_issue_per_volume_per_journal.csv")
 
 
+
+## run this just if you were stopped mid-way and had to restart
+articles <- read_csv("Data/articles_per_issue_per_volume_per_journal.csv")
 # step 3: relevant info for each article
 
 iter_helper <- articles %>% 
@@ -175,9 +176,11 @@ iter_articles <- iter_articles %>%
 iter_articles <- iter_articles %>% 
   left_join(journals)
 
-# 4. cleaning off 2021
+# 4. cleaning off 2023
 iter_articles <- iter_articles %>%
   filter(volume != volumes)
+
+
 
 # basic scraping function
 scrape <- function(ISSN, volume, issue, article, ...){
@@ -190,8 +193,6 @@ scrape <- function(ISSN, volume, issue, article, ...){
   
   year <- html_text(html_nodes(pg, ".bib-identity b")) %>% as.integer()
   
-  #volume <-  html_text(html_nodes(pg, ".bib-identity b+ em")) %>% as.integer()
-  
   DOI <- html_text(html_nodes(pg, ".bib-identity a"))
   
   history <- html_text(html_nodes(pg, ".pubhistory"))
@@ -202,7 +203,11 @@ scrape <- function(ISSN, volume, issue, article, ...){
     SI <- "Normal Issue"
   }
   
-  h <- tibble(journal, year, volume, issue, DOI, SI, history)
+  views <- jsonlite::read_json(sprintf("https://www.mdpi.com/%s/%s/%s/%s/stats", ISSN, volume, issue, article))$metrics$views
+  
+  downloads <- jsonlite::read_json(sprintf("https://www.mdpi.com/%s/%s/%s/%s/stats", ISSN, volume, issue, article))$metrics$downloads
+  
+  h <- tibble(journal, year, volume, issue, DOI, views, downloads, authors, SI, history)
   h
 }
 
