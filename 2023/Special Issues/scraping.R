@@ -77,6 +77,9 @@ journals <- journals %>%
   separate(ISSN, into = c("drop", "ISSN", "drop2"), sep = "\n") %>% 
   select(-starts_with("drop"))
 
+# export ALL journal dataset to csv
+journals %>% write_csv("2023/Special Issues/Data/all_journals.csv")
+
 
 # filtering only journals with an IF
 # !!!: this is crucial to cut the runtime of the whole script. 

@@ -141,7 +141,7 @@ articles %>%
 
 ## run this just if you were stopped mid-way and had to restart
 articles <- read_csv("Data/articles_per_issue_per_volume_per_journal.csv")
-a# step 3: relevant info for each article
+# step 3: relevant info for each article
 
 iter_helper <- articles %>% 
   select(-journal) %>% 
@@ -257,6 +257,10 @@ iter_journals <- iter_articles %>%
   arrange(n) %$% 
   journal
 
+## write to csv to be able to restart from here
+iter_articles %>% 
+  write_csv("Data/iter_final.csv")
+
 # run the scrape, one journal at a time -- this takes an AWFUL LOT of time
 for (jo in iter_journals[1]) {
   cat(jo, '\n')
@@ -264,14 +268,9 @@ for (jo in iter_journals[1]) {
 }
 
 
-
-### TODO 23.3
-#### 1. problem with the types (character vs integer) -> transform everything to char in first function
-#### 2. 
-
 # run the scrape via Rstudio jobs, to speed things up
-# done, just waiting for it to finish
 
-minjo <- 74
-maxjo <- 74
-rstudioapi::jobRunScript(path = "Editorial history/rstudio_jobs_scrape.R", importEnv = TRUE)
+# done, till 60-biomedicines
+minjo <- 60
+maxjo <- 60
+rstudioapi::jobRunScript(path = "rstudio_jobs_scrape.R", importEnv = TRUE)
